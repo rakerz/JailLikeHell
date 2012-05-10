@@ -1,0 +1,7 @@
+name: JailLikeHell
+main: code.shoottomaim.JLH
+version: 4.2.5
+commands:
+    jlh:
+        description: JailLikeHell commands
+        usage: /jlh <options>
