@@ -48,7 +48,6 @@ public class JLH extends JavaPlugin {
 		} catch (IOException e) {
 		    // Failed to submit the stats :(
 		}
-		
 		this.console = getServer().getConsoleSender();
 		boolean success = (new File("plugins/JailLikeHell/")).mkdir();
 		if (success) {
@@ -224,7 +223,7 @@ public class JLH extends JavaPlugin {
 					
 					setUnjail(sender, args);
 					
-					player.sendMessage("[JailLikeHell] Unjail location set.");
+					player.sendMessage(ChatColor.YELLOW + "[JailLikeHell] Unjail location set.");
 					return true;
 				} else if (args[0].equalsIgnoreCase("jailtime") && (args.length <= 1)) {
 					if (!hasPermission(sender, "JailLikeHell.jailtime")) {
@@ -313,7 +312,7 @@ public class JLH extends JavaPlugin {
 		setPotionEffects(player);
 		for (int i = 0; i < 3; i++)
 			spawnAngryWolfOn(player);
-		sender.sendMessage(ChatColor.RED + "[JailLikeHell] Player sent to jail.");
+		sender.sendMessage(ChatColor.RED + "[JailLikeHell] Player sent to jail!");
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -345,7 +344,7 @@ public class JLH extends JavaPlugin {
 		this.jailed.set(args[1], null);
 		saveJail();
 		removePotionEffects(player);
-		player.sendMessage(ChatColor.AQUA + "[JailLikeHell] You have been removed from jail!");
+		player.sendMessage(ChatColor.GREEN + "[JailLikeHell] You have been removed from jail!");
 		if (fromTempJail) {
 			sender.sendMessage(ChatColor.AQUA + player.getName() + " auto-unjailed.");
 		} else {
@@ -380,7 +379,7 @@ public class JLH extends JavaPlugin {
 		config.set("jail.z", Integer.valueOf((int) this.jailLoc.getZ()));
 		config.set("jail.world", this.jailLoc.getWorld().getName());
 		saveConfig();
-		sender.sendMessage(ChatColor.AQUA + "Jail point saved.");
+		sender.sendMessage(ChatColor.AQUA + "[JailLikeHell] Jail point has been saved.");
 	}
 	
 	public void setUnjail(CommandSender sender, String[] args) {
@@ -404,12 +403,12 @@ public class JLH extends JavaPlugin {
 		config.set("unjail.z", Integer.valueOf((int) this.unjailLoc.getZ()));
 		config.set("unjail.world", this.unjailLoc.getWorld().getName());
 		saveConfig();
-		sender.sendMessage(ChatColor.AQUA + "[JailLikeHell] Unjail point saved.");
+		sender.sendMessage(ChatColor.AQUA + "[JailLikeHell] Unjail point has been saved.");
 	}
 	
 	public void jailTime(CommandSender sender, String[] args) {
 		if ((!(sender instanceof Player)) && (args.length == 1)) {
-			sender.sendMessage(ChatColor.RED + "[JailLikeHell] Must specify a player.");
+			sender.sendMessage(ChatColor.RED + "[JailLikeHell] Must specify a player!");
 			return;
 		}
 		Player player = args.length == 1 ? (Player) sender : getServer().getPlayer(args[1]);
@@ -426,7 +425,7 @@ public class JLH extends JavaPlugin {
 			return;
 		}
 		int minutes = (int) ((getTempJailTime(player) - System.currentTimeMillis()) / 60000.0D);
-		sender.sendMessage(ChatColor.AQUA + "[JailLikeHell] Remaining jail time: " + prettifyMinutes(minutes));
+		sender.sendMessage(ChatColor.RED + "[JailLikeHell] Remaining jail time: " + prettifyMinutes(minutes));
 	}
 	
 	public void loadConfig() {

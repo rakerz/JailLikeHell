@@ -176,7 +176,7 @@ public class JL implements Listener {
 			// System.currentTimeMillis()) / 60000.0D);
 			player.sendMessage(ChatColor.RED + "[JailLikeHell] You are jailed for " + plugin.prettifyMinutes(minutes) + ".");
 		} else {
-			player.sendMessage(ChatColor.RED + "[JailLikeHell] You are permanently jailed.");
+			player.sendMessage(ChatColor.RED + "[JailLikeHell] You are permanently jailed!");
 			plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 				@Override
 				public void run() {
