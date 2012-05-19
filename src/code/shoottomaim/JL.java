@@ -45,12 +45,13 @@ public class JL implements Listener {
 		wolf.setAdult();
 		wolf.setTarget(player);
 		wolf.setAngry(true);
+		wolf.damage(0, player);
 	}
 	
 	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent event) {
 		Player player = event.getPlayer();
-		if (event.getPlayer().getItemInHand().getTypeId() == /* plugin.getConfig().getInt("JLH.wand") */280) {
+		if (event.getPlayer().getItemInHand().getTypeId() == plugin.getConfig().getInt("jailwand")) {
 			if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
 				loc.put(player, event.getClickedBlock().getLocation());
 				player.sendMessage(ChatColor.YELLOW + "[JailLikeHell] First point has been set.");
@@ -61,16 +62,13 @@ public class JL implements Listener {
 				loc1.put(player, event.getClickedBlock().getLocation());
 				player.sendMessage(ChatColor.YELLOW + "[JailLikeHell] Second point has been set.");
 			}
-		}
+		}/*
 		Block block = event.getClickedBlock();
 		if (event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_BLOCK) {
 			if (!plugin.hasPermission(player, "JailLikeHell.bypassProtection")) {
-				if (!event.isCancelled()) event.setCancelled(isProtected(block));
-				if (isProtected(block)) {
-					event.getPlayer().sendMessage(ChatColor.RED + "[JailLikeHell] You cannot escape the jail!");
-				}
+				event.setCancelled(isProtected(block) || event.isCancelled());
 			}
-		}
+		}*/
 	}
 	
 	@EventHandler
@@ -82,6 +80,11 @@ public class JL implements Listener {
 			if (isProtected(block)) {
 				event.setCancelled(true);
 				event.getPlayer().sendMessage(ChatColor.RED + "[JailLikeHell] You cannot escape the jail!");
+				
+				int jbt = plugin.getConfig().getInt("jailBreakPunishTime", 120);
+				if(jbt > 0){
+					plugin.increaseSentence(player, jbt);
+				}
 			}
 		}
 	}
@@ -157,19 +160,10 @@ public class JL implements Listener {
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		final Player player = event.getPlayer();
-		if ((!plugin.playerIsJailed(player)) || (!plugin.playerIsTempJailed(player))) {
+		if ((!plugin.playerIsJailed(player)) && (!plugin.playerIsTempJailed(player))) {
 			return;
 		}
-		double tempTime = plugin.getTempJailTime(player);
-		long currentTime = System.currentTimeMillis();
 		
-		if (tempTime <= currentTime) {
-			plugin.unjailPlayer(plugin.console, new String[] {"unjail", player.getName()}, true);
-		}
-		
-		if (!plugin.playerIsJailed(player)) {
-			return;
-		}
 		if (plugin.playerIsTempJailed(player)) {
 			int minutes = (int) Math.round((plugin.getTimeSentenced(player) - plugin.getTimeServed(player)) / 60.0);
 			// int minutes = (int)((plugin.getTempJailTime(player) -
@@ -187,6 +181,7 @@ public class JL implements Listener {
 					wolf.setAdult();
 					wolf.setTarget(player);
 					wolf.setAngry(true);
+					wolf.damage(0, player);
 				}
 			}, 60L);
 		}

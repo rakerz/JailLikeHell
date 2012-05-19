@@ -1,7 +1,40 @@
 name: JailLikeHell
 main: code.shoottomaim.JLH
-version: 5.3.2
+version: 5.3.6
 commands:
     jlh:
         description: jail info
         usage: /jlh args
+
+permissions:
+    JailLikeHell.protect:
+        description: Allows you to protect a plot of land.
+        default: op
+    JailLikeHell.unprotect:
+        description: Allows you to unprotect a plot of land.
+        default: op
+    JailLikeHell.wand:
+        description: Gives you a jail wand.
+        default: op
+    JailLikeHell.info:
+        description: Allows you to see the help menu.
+        default: op
+    JailLikeHell.jail:
+        description: Allows you to jail a player.
+        default: op
+    JailLikeHell.unjail:
+        description: Allows you to unjail a player.
+        default: op
+    JailLikeHell.setjail:
+        description: Allows you to set the jail point.
+        default: op
+    JailLikeHell.setunjail:
+        description: Allows you to set the unjail point.
+        default: op
+    JailLikeHell.jailtime:
+        description: Allows you to check your jail time.
+        default: op
+    JailLikeHell.jailstick:
+        description: Allows you to jail players with a stick. unused because jaillikehell.jail gives you this permission
+        default: op
+    

@@ -21,6 +21,8 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Wolf;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -43,10 +45,10 @@ public class JLH extends JavaPlugin {
 	
 	public void onEnable() {
 		try {
-		    Metrics metrics = new Metrics(this);
-		    metrics.start();
+			Metrics metrics = new Metrics(this);
+			metrics.start();
 		} catch (IOException e) {
-		    // Failed to submit the stats :(
+			// Failed to submit the stats :(
 		}
 		this.console = getServer().getConsoleSender();
 		boolean success = (new File("plugins/JailLikeHell/")).mkdir();
@@ -110,13 +112,19 @@ public class JLH extends JavaPlugin {
 	}
 	
 	private void setPotionEffects(Player player) {
-		player.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 300, 5), true);
-		player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 300, 5), true);
+		player.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION,    300, 5), true);
+		player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS,    300, 5), true);
+		player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 300, 5), true);
+		player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER,       300, 5), true);
+		player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS,     300, 5), true);
 	}
 	
 	private void removePotionEffects(Player player){
-		player.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 0, 0), true);
-		player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 0, 0), true);
+		player.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION,    0, 0), true);
+		player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS,    0, 0), true);
+		player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 0, 0), true);
+		player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER,       0, 0), true);
+		player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS,     0, 0), true);
 	}
 	
 	private void spawnAngryWolfOn(Player player) {
@@ -125,6 +133,7 @@ public class JLH extends JavaPlugin {
 		// wolf.setAdult();
 		wolf.setTarget(player);
 		wolf.setAngry(true);
+		wolf.damage(0, player);
 	}
 	
 	private boolean setupPermissions() {
@@ -175,7 +184,7 @@ public class JLH extends JavaPlugin {
 						player.sendMessage(ChatColor.YELLOW + "/jlh unjail   - Unjails a player!");
 						player.sendMessage(ChatColor.YELLOW + "/jlh setjail  - Sets a jail point!");
 						player.sendMessage(ChatColor.YELLOW + "/jlh jailtime - Checks the remaining jail time!");
-						player.sendMessage(ChatColor.YELLOW + "/jlh protect  - Protects the area set!");
+						player.sendMessage(ChatColor.YELLOW + "/jlh protect  - Protects tchange this ploxhe area set!");
 						player.sendMessage(ChatColor.YELLOW + "/jlh wand     - Spawns a wand for selecting 2 points!");
 						
 						return true;
@@ -217,7 +226,7 @@ public class JLH extends JavaPlugin {
 					player.sendMessage(ChatColor.AQUA + "[JailLikeHell] The jail point has been set!");
 					return true;
 				} else if (args[0].equalsIgnoreCase("setunjail") && ((args.length == 5) || (args.length == 1))) {
-					if (!hasPermission(sender, "JailLikeHell.setjail")) {
+					if (!hasPermission(sender, "JailLikeHell.setunjail")) {
 						return true;
 					}
 					
@@ -237,11 +246,31 @@ public class JLH extends JavaPlugin {
 		return succeed;
 	}
 	
+	@EventHandler
+	public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+		//System.out.println("[SimpleFly] Debug: " + event.getCause().name());
+		if (!(event.getEntity() instanceof Player) || !(event.getDamager() instanceof Player)) return;
+		
+		if(event.getCause() != DamageCause.ENTITY_ATTACK) return;
+		Player damaged = (Player) event.getEntity();
+		Player damagee = (Player) event.getDamager();
+		
+		if(damagee.getItemInHand().getTypeId() == this.getConfig().getInt("jailwand")){
+			if(!damagee.hasPermission("JailLikeHell.jail")) return;
+			this.jailPlayer(damagee, new String[]{"jailstick", damaged.getName()});
+		}
+	}
+	
 	private void protect(Player player) {
 		if (listener.getLoc().containsKey(player) && listener.getLoc1().containsKey(player)) {
 			try {
 				Writer output = new FileWriter("plugins/JailLikeHell/protection.txt", false);
-				output.write(listener.getLoc().get(player).getBlock().getX() + "," + listener.getLoc().get(player).getBlock().getY() + "," + listener.getLoc().get(player).getBlock().getZ() + "," + listener.getLoc1().get(player).getBlock().getX() + "," + listener.getLoc1().get(player).getBlock().getY() + "," + listener.getLoc1().get(player).getBlock().getZ());
+				output.write(listener.getLoc().get(player).getBlock().getX()
+						+ "," + listener.getLoc().get(player).getBlock().getY()
+						+ "," + listener.getLoc().get(player).getBlock().getZ()
+						+ "," + listener.getLoc1().get(player).getBlock().getX()
+						+ "," + listener.getLoc1().get(player).getBlock().getY()
+						+ "," + listener.getLoc1().get(player).getBlock().getZ());
 				output.close();
 				player.sendMessage(ChatColor.AQUA + "[JailLikeHell] The jail is now protected!");
 			} catch (IOException x) {
@@ -261,6 +290,33 @@ public class JLH extends JavaPlugin {
 		} catch (IOException x) {
 			log.info(x.toString());
 		}
+	}
+	
+	public void increaseSentence(Player player, int seconds){
+		if(!this.playerIsTempJailed(player)) return;
+		int currentSentence = this.jailed.getInt(player.getName().toLowerCase() + ".timeSentenced");
+		int currentTempTime = this.jailed.getInt(player.getName().toLowerCase() + ".tempTime");
+		double tempTime = seconds * 1000 + currentTempTime;
+		
+		String playername = player.getName().toLowerCase();
+		
+		this.jailed.set(playername + ".tempTime", tempTime);
+		this.jailed.set(playername + ".timeSentenced", (double) (seconds+currentSentence)); // measured in seconds
+		String str = ChatColor.RED + "[JailLikeHell] Your sentence has been increased by ";
+		String strm = null;
+		String strs = null;
+		if(seconds/60 != 0) strm = seconds/60 + " minutes";
+		if(seconds%60 != 0) strs = seconds%60 + " seconds";
+		if(strm == null && strs == null) return;
+		
+		if(strm == null && strs != null)
+			str += strs;
+		else if(strm != null && strs == null)
+			str += strm;
+		else
+			str += strm + " and " + strs;
+		
+		player.sendMessage(str);
 	}
 	
 	public void jailPlayer(CommandSender sender, String[] args) {
@@ -290,14 +346,11 @@ public class JLH extends JavaPlugin {
 		if (args.length == 3) {
 			minutes = parseTimeString(args[2]);
 			if (minutes != -1) {
-				System.out.println("[JailLikeHell] " + minutes);
+				//System.out.println("[JailLikeHell] " + minutes);
 				double tempTime = System.currentTimeMillis() + minutes * 60000;
 				this.jailed.set(args[1] + ".tempTime", tempTime);
-				this.jailed.set(args[1] + ".timeServed", 0D); // measured in
-				// seconds
-				this.jailed.set(args[1] + ".timeSentenced", (double) minutes * 60); // measured
-				// in
-				// seconds
+				this.jailed.set(args[1] + ".timeServed", 0D); // measured in seconds
+				this.jailed.set(args[1] + ".timeSentenced", (double) minutes * 60); // measured in seconds
 			}
 		}
 		saveJail();
@@ -315,7 +368,6 @@ public class JLH extends JavaPlugin {
 		sender.sendMessage(ChatColor.RED + "[JailLikeHell] Player sent to jail!");
 	}
 	
-	@SuppressWarnings("unchecked")
 	public void unjailPlayer(CommandSender sender, String[] args, boolean fromTempJail) {
 		Player player = getServer().getPlayer(args[1]);
 		args[1] = (player == null ? args[1].toLowerCase() : player.getName().toLowerCase());
@@ -330,14 +382,14 @@ public class JLH extends JavaPlugin {
 		}
 		
 		if (this.jailed.get(args[1] + ".groups") == null) {
-			List<String> groups = (List<String>) this.jailed.getList(args[1]);
+			List<String> groups = this.jailed.getStringList(args[1]);
 			this.jailed.set(args[1], null);
 			this.jailed.set(args[1] + ".groups", groups);
 		}
 		
 		player.teleport(this.unjailLoc);
 		try {
-			restoreGroup(args[1], (List<String>) this.jailed.getList(args[1] + ".groups"));
+			restoreGroup(args[1], this.jailed.getStringList(args[1] + ".groups"));
 		} catch (Exception e) {
 			System.out.println("[JailLikeHell] Groups not supported. Do you have a permissions plugin enabled?");
 		}
@@ -433,6 +485,7 @@ public class JLH extends JavaPlugin {
 		config.options().copyDefaults(true);
 		config.addDefault("jailgroup", "Jailed");
 		config.addDefault("jailwand", 280);
+		config.addDefault("jailBreakPunishTime", 120);
 		config.addDefault("jail.world", ((World) getServer().getWorlds().get(0)).getName());
 		config.addDefault("jail.x", Integer.valueOf(0));
 		config.addDefault("jail.y", Integer.valueOf(0));
