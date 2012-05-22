@@ -21,6 +21,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Wolf;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.inventory.ItemStack;
@@ -29,7 +30,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-public class JLH extends JavaPlugin {
+public class JLH extends JavaPlugin implements Listener {
 	private static final Logger log = Logger.getLogger("Minecraft");
 	public ConsoleCommandSender console;
 	private Location jailLoc;
@@ -70,6 +71,7 @@ public class JLH extends JavaPlugin {
 		
 		this.listener = new JL(this);
 		getServer().getPluginManager().registerEvents(listener, this);
+		getServer().getPluginManager().registerEvents(this, this);
 		
 		getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
 			@SuppressWarnings("deprecation")
@@ -111,7 +113,7 @@ public class JLH extends JavaPlugin {
 		log.info("[JailLikeHell] " + getDescription().getName() + " v" + getDescription().getVersion() + " enabled.");
 	}
 	
-	private void setPotionEffects(Player player) {
+	public void setPotionEffects(Player player) {
 		player.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION,    300, 5), true);
 		player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS,    300, 5), true);
 		player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 300, 5), true);
@@ -119,7 +121,7 @@ public class JLH extends JavaPlugin {
 		player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS,     300, 5), true);
 	}
 	
-	private void removePotionEffects(Player player){
+	public void removePotionEffects(Player player){
 		player.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION,    0, 0), true);
 		player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS,    0, 0), true);
 		player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 0, 0), true);
@@ -144,7 +146,6 @@ public class JLH extends JavaPlugin {
 		return (permission != null);
 	}
 	
-	@EventHandler
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
 		boolean succeed = false;
 		Player player = null;
@@ -248,7 +249,6 @@ public class JLH extends JavaPlugin {
 	
 	@EventHandler
 	public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
-		//System.out.println("[SimpleFly] Debug: " + event.getCause().name());
 		if (!(event.getEntity() instanceof Player) || !(event.getDamager() instanceof Player)) return;
 		
 		if(event.getCause() != DamageCause.ENTITY_ATTACK) return;

@@ -46,6 +46,8 @@ public class JL implements Listener {
 		wolf.setTarget(player);
 		wolf.setAngry(true);
 		wolf.damage(0, player);
+		
+		plugin.setPotionEffects(player);
 	}
 	
 	@EventHandler

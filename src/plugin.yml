@@ -1,6 +1,6 @@
 name: JailLikeHell
 main: code.shoottomaim.JLH
-version: 5.3.6
+version: 5.4.1
 commands:
     jlh:
         description: jail info
